@@ -3,4 +3,9 @@ uvicorn[standard]
 psycopg2-binary
 python-dotenv
 sqlalchemy 
-cloudinary
+cloudinary 
+passlib[bcrypt]
+python-jose
+python-multipart 
+argon2_cffi
+

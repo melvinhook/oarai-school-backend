@@ -1,6 +1,6 @@
 from sqlalchemy import Integer,Column,String,ForeignKey,DateTime,func 
 from sqlalchemy.orm import relationship
-from ...database import base
+from database import base
 class Replies(base): 
     __tablename__="replies" 
     id=Column(Integer,index=True,primary_key=True,autoincrement=True) 

@@ -1,6 +1,6 @@
 from pydantic import BaseModel 
 from typing import List, Optional  
-from .department import DepartmentOut
+
 class PostTestBaseModel(BaseModel):
     title:str
     desc:str

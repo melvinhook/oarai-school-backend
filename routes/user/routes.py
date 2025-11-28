@@ -1,18 +1,18 @@
 import os
 import cloudinary
 import cloudinary.uploader
-import cloudinary.api  
 from datetime import datetime 
 from fastapi import APIRouter, File, Form,HTTPException,Depends, UploadFile 
+from jose import jwt , JWTError
 from pydantic import BaseModel 
 from passlib.context import CryptContext 
 from sqlalchemy.orm import Session  
 from fastapi.security import OAuth2PasswordRequestForm
-from .auth import create_access_token , get_current_user
-from ...dep import get_db 
-from ...models.Users import models    
+from . import auth
+from dep import get_db 
+from models.Users import models    
 router=APIRouter()   
-pwd_context=CryptContext(schemes=['bcrypt'],deprecated="auto")
+pwd_context=CryptContext(schemes=['bcrypt','argon2'],default='argon2',deprecated="auto")
 class UserCreate(BaseModel): 
     username:str 
     email:str 
@@ -31,7 +31,6 @@ def hash(password:str)->str:
     return pwd_context.hash(password) 
 def verify(ppass:str,hpass:str)->bool: 
     return pwd_context.verify(ppass,hpass)  
-
 @router.post("/users/")
 async def create_user(
     username: str = Form(...),
@@ -106,22 +105,23 @@ def login(u:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(get_db)):
     try: 
         if not similar or not verify(u.password,similar.password): 
             raise HTTPException(status_code=404,detail="Invalid Username ORRR Pass") 
-        access_token = create_access_token(data={"sub": u.username})
+        access_token = auth.create_access_token(data={"sub": u.username})
         return {"access_token": access_token, "token_type": "bearer"}
     except: 
         raise HTTPException(status_code=404,detail="Not Found")   
 @router.get("/users/get") 
-def get_user_verify(current_user:str=Depends(get_current_user)): 
+def get_user_verify(current_user:str=Depends(auth.get_current_user)): 
     return {"Username" : current_user} 
 @router.get("/users/get_current_user")
-def get_user_verify(
-    current_user: str = Depends(get_current_user),
-    db: Session = Depends(get_db)
-    ):
-    user = db.query(models.User.id, models.User.first_name, models.User.last_name, models.User.profile_photos).filter(models.User.username == current_user).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return {"id":user.id,"firstname": user.first_name, "lastname": user.last_name, "profile_photo": user.profile_photos}
+def get_current_user(token: str = Depends(auth.get_current_user)):
+    try:
+        payload = jwt.decode(token, auth.SECRET_KEY, algorithms=[auth.ALGORITHM])
+        username = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return username
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 @router.get("/users/") 
 def get_user(db:Session=Depends(get_db)): 
     return db.query(models.User).all() 

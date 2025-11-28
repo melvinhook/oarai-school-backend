@@ -1,6 +1,6 @@
 from sqlalchemy import Column,Integer,ForeignKey,DateTime, UniqueConstraint,func
 from sqlalchemy.orm import relationship
-from ...database import base 
+from database import base 
 class PostLikes(base): 
     __tablename__="postlikes" 
     id=Column(Integer,autoincrement=True,primary_key=True,index=True) 

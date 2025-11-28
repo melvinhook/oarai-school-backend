@@ -1,12 +1,12 @@
 from fastapi import FastAPI, Depends,  APIRouter, Query, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session   
-from ...models.Test import department as departmentModel , employee as employeeModel , posttest as posttestmodel
-from ...schemas.test import scheme  
-from ...schemas.test import employee 
-from ...schemas.test import department 
-from ...schemas.test import posttest 
-from ...dep import get_db  
+from models.Test import department as departmentModel , employee as employeeModel , posttest as posttestmodel
+from schemas.test import scheme  
+from schemas.test import employee 
+from schemas.test import department 
+from schemas.test import posttest 
+from dep import get_db  
 router=APIRouter(prefix="/test")   
 current_ids = set()  
 def update_id_fit(db: Session, all_posts):

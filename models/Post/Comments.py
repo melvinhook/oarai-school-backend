@@ -1,6 +1,6 @@
 from sqlalchemy import Column,DateTime,Integer,String,ForeignKey,desc,func 
 from sqlalchemy.orm import relationship
-from ...database import base
+from database import base
 class Comments(base):   
     __tablename__="comments"
     id=Column(Integer,primary_key=True,index=True,autoincrement=True) 

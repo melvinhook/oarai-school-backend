@@ -1,4 +1,4 @@
-from .database import local 
+from database import local 
 def get_db(): 
     db=local() 
     try: 

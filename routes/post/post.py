@@ -4,10 +4,10 @@ import cloudinary.uploader
 from fastapi import APIRouter,Depends, Form,HTTPException, UploadFile
 from sqlalchemy.orm import Session 
 from sqlalchemy import desc 
-from ...models.Post import Posts,Comments,Replies,PostLikes,CommentLikes,ReplyLikes 
-from ...models.Post.Posts import Posts as postmodel
-from ...schemas.Post import scheme 
-from ...dep import get_db   
+from models.Post import Posts,Comments,Replies,PostLikes,CommentLikes,ReplyLikes 
+from models.Post.Posts import Posts as postmodel
+from schemas.Post import scheme 
+from dep import get_db   
 from pydantic import BaseModel
 from sqlalchemy.orm import joinedload
 router=APIRouter()  
