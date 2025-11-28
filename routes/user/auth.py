@@ -26,7 +26,6 @@ def get_current_user(
     x_custom_auth: str | None = Header(None, alias="X-Custom-Auth") 
 ): 
     print("=== get_current_user CALLED ===")
-    
     # PENTING: Tentukan token mana yang akan digunakan
     # Prioritaskan header standar, jika tidak ada, gunakan header kustom
     token = auth_header 
@@ -59,6 +58,6 @@ def get_current_user(
         print("=== TOKEN VALID ===")
         return username
     except JWTError: 
-        print("❌ JWT ERROR:", e)
+        print("❌ JWT ERROR:")
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
