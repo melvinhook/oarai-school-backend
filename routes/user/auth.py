@@ -26,11 +26,11 @@ def get_current_user(
     x_custom_auth: str | None = Header(None, alias="X-Custom-Auth") 
 ): 
     print("=== get_current_user CALLED ===")
-    print("Raw token (from header):", token)
+    
     # PENTING: Tentukan token mana yang akan digunakan
     # Prioritaskan header standar, jika tidak ada, gunakan header kustom
     token = auth_header 
-    
+    print("Raw token (from header):", token)
     # Jika token standar tidak ada, dan token kustom ada, gunakan token kustom
     # Catatan: Header kustom biasanya tidak otomatis di-handle oleh OAuth2PasswordBearer
     if not token and x_custom_auth:
