@@ -2,7 +2,7 @@ import os
 import cloudinary
 import cloudinary.uploader
 from datetime import datetime 
-from fastapi import APIRouter, File, Form,HTTPException,Depends, UploadFile 
+from fastapi import APIRouter, File, Form,HTTPException,Depends, UploadFile, Response 
 from jose import jwt , JWTError
 from pydantic import BaseModel 
 from passlib.context import CryptContext 
@@ -100,7 +100,7 @@ def login(u:UserLogin,db:Session=Depends(get_db)):
     except: 
         return {"Nope"}
 @router.post("/jwtlogin/") 
-def login(u:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(get_db)): 
+def login(u:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(get_db),response: Response = None):  
     similar=db.query(models.User).filter(models.User.username==u.username).first()  
     print("=== LOGIN REQUEST RECEIVED ===")
     print("Username:", u.username)
@@ -112,9 +112,17 @@ def login(u:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(get_db)):
     try: 
         if not similar or not verify(u.password,similar.password): 
             raise HTTPException(status_code=404,detail="Invalid Username ORRR Pass") 
-        access_token = auth.create_access_token(data={"sub": u.username}) 
+        access_token = auth.create_access_token(data={"sub": u.username})  
         print("Generated JWT:", access_token)
-        print("=== LOGIN SUCCESS ===")
+        print("=== LOGIN SUCCESS ===") 
+        response.set_cookie(
+            key = "jwt",
+            value = access_token,
+            httponly = True,
+            secure = True,
+            samesite = "None",
+            path = "/",
+        )
         return {"access_token": access_token, "token_type": "bearer"}
     except: 
         raise HTTPException(status_code=404,detail="Not Found")    
