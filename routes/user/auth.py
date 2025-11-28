@@ -19,12 +19,14 @@ def verify_access_token(token: str):
         return payload  # contains user_id / username etc.
     except JWTError:
         return None   
-def get_current_user(
+def get_current_user( 
     # Coba ambil token dari header standar: Authorization: Bearer <token>
     auth_header: str = Depends(oauth2_scheme), 
     # Coba ambil token dari header kustom: X-Custom-Auth: Bearer <token>
     x_custom_auth: str | None = Header(None, alias="X-Custom-Auth") 
-):
+): 
+    print("=== get_current_user CALLED ===")
+    print("Raw token (from header):", token)
     # PENTING: Tentukan token mana yang akan digunakan
     # Prioritaskan header standar, jika tidak ada, gunakan header kustom
     token = auth_header 
@@ -47,12 +49,16 @@ def get_current_user(
         if token.startswith("Bearer "):
             token = token.replace("Bearer ", "")
 
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM]) 
+        print("Decoded payload:", payload)
         username: str = payload.get("sub")
-        
-        if username is None:
-            raise HTTPException(status_code=401, detail="Invalid token payload")
+        print("Extracted username:", username)
+        if username is None: 
+            print("❌ No username inside token")
+            raise HTTPException(status_code=401, detail="Invalid token payload") 
+        print("=== TOKEN VALID ===")
         return username
-    except JWTError:
+    except JWTError: 
+        print("❌ JWT ERROR:", e)
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
