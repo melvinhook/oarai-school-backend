@@ -123,29 +123,15 @@ def login(u:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(get_db)):
 def get_user_verify(current_user:str=Depends(auth.get_current_user)): 
     return {"Username" : current_user} 
 @router.get("/users/get_current_user")
-def get_user_verify(
-    current_user: str = Depends(auth.get_current_user),
-    db: Session = Depends(get_db)
-):
-    print("=== Fetching user profile for:", current_user)
-
-    user = db.query(models.User.id, models.User.first_name, models.User.last_name, models.User.profile_photos)\
-             .filter(models.User.username == current_user)\
-             .first()
-    
-    print("DB RESULT:", user)
-
-    if not user:
-        print("❌ User not found in DB")
-        raise HTTPException(status_code=404, detail="User not found")
-
-    print("=== USER FETCH SUCCESS ===")
-    return {
-        "id": user.id,
-        "firstname": user.first_name,
-        "lastname": user.last_name,
-        "profile_photo": user.profile_photos
-    }
+def get_current_user(token: str = Depends(auth.get_current_user)): 
+    try:
+        payload = jwt.decode(token, auth.SECRET_KEY, algorithms=[auth.ALGORITHM])
+        username = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return username
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 @router.get("/users/") 
 def get_user(db:Session=Depends(get_db)): 
     return db.query(models.User).all() 
