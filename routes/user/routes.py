@@ -131,10 +131,11 @@ def login(u:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(get_db),respo
 def get_user_verify(current_user:str=Depends(auth.get_current_user)): 
     return {"Username" : current_user} 
 @router.get("/users/get_current_user")
-def get_current_user(username: str = Depends(auth.get_current_user)):
+def get_current_user(username: str = Depends(auth.get_current_user),db:Session=Depends(get_db)): 
+    get_user=db.query(models.User).filter(models.User.username==username).first()
     print("=== RETURNING CURRENT USER ===")
-    print("Username from dependency:", username)
-    return {"username": username}
+    print("Username from dependency:", username) 
+    return {"username": username,"first_name":get_user.first_name,"last_name":get_user.last_name}
 @router.get("/users/") 
 def get_user(db:Session=Depends(get_db)): 
     return db.query(models.User).all() 
