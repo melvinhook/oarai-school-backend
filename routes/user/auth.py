@@ -1,4 +1,4 @@
-from fastapi import Depends , HTTPException, Header
+from fastapi import HTTPException, Header, Cookie
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
@@ -19,45 +19,37 @@ def verify_access_token(token: str):
         return payload  # contains user_id / username etc.
     except JWTError:
         return None   
-def get_current_user( 
-    # Coba ambil token dari header standar: Authorization: Bearer <token>
-    auth_header: str = Depends(oauth2_scheme), 
-    # Coba ambil token dari header kustom: X-Custom-Auth: Bearer <token>
-    x_custom_auth: str | None = Header(None, alias="X-Custom-Auth") 
-): 
+def get_current_user(
+    jwt_cookie: str | None = Cookie(None, alias="jwt"),
+    auth_header: str | None = Header(None, alias="Authorization")
+):
     print("=== get_current_user CALLED ===")
-    # PENTING: Tentukan token mana yang akan digunakan
-    # Prioritaskan header standar, jika tidak ada, gunakan header kustom
-    token = auth_header 
-    print("Raw token (from header):", token)
-    # Jika token standar tidak ada, dan token kustom ada, gunakan token kustom
-    # Catatan: Header kustom biasanya tidak otomatis di-handle oleh OAuth2PasswordBearer
-    if not token and x_custom_auth:
-        # Asumsikan formatnya juga "Bearer <token>"
-        if x_custom_auth.startswith("Bearer "):
-            token = x_custom_auth.replace("Bearer ", "")
-        else:
-            token = x_custom_auth # Jika Anda kirim token mentah tanpa "Bearer"
-    
-    # --- Proses Verifikasi Token ---
-    if not token:
-        raise HTTPException(status_code=401, detail="Token is missing")
-        
-    try:
-        # Jika token masih dalam format 'Bearer <token>', kita harus menghilangkannya.
-        if token.startswith("Bearer "):
-            token = token.replace("Bearer ", "")
 
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM]) 
+    # Ambil token dari cookie dulu
+    token = jwt_cookie
+
+    # Jika tidak ada cookie, coba dari Authorization header
+    if not token and auth_header:
+        if auth_header.startswith("Bearer "):
+            token = auth_header.replace("Bearer ", "")
+        else:
+            token = auth_header
+
+    print("Raw token:", token)
+
+    if not token:
+        raise HTTPException(status_code=401, detail="Token missing")
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         print("Decoded payload:", payload)
-        username: str = payload.get("sub")
+        username = payload.get("sub")
         print("Extracted username:", username)
-        if username is None: 
-            print("❌ No username inside token")
-            raise HTTPException(status_code=401, detail="Invalid token payload") 
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token payload")
         print("=== TOKEN VALID ===")
         return username
-    except JWTError: 
-        print("❌ JWT ERROR:")
+    except JWTError:
+        print("❌ JWT ERROR")
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
