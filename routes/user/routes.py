@@ -135,7 +135,7 @@ def get_current_user(username: str = Depends(auth.get_current_user),db:Session=D
     get_user=db.query(models.User).filter(models.User.username==username).first()
     print("=== RETURNING CURRENT USER ===")
     print("Username from dependency:", username) 
-    return {"username": username,"first_name":get_user.first_name,"last_name":get_user.last_name}
+    return {"username": username,"first_name":get_user.first_name,"last_name":get_user.last_name,"img":get_user.profile_photos}
 @router.get("/users/") 
 def get_user(db:Session=Depends(get_db)): 
     return db.query(models.User).all() 
