@@ -131,15 +131,10 @@ def login(u:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(get_db),respo
 def get_user_verify(current_user:str=Depends(auth.get_current_user)): 
     return {"Username" : current_user} 
 @router.get("/users/get_current_user")
-def get_current_user(token: str = Depends(auth.get_current_user)): 
-    try:
-        payload = jwt.decode(token, auth.SECRET_KEY, algorithms=[auth.ALGORITHM])
-        username = payload.get("sub")
-        if username is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        return username
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+def get_current_user(username: str = Depends(auth.get_current_user)):
+    print("=== RETURNING CURRENT USER ===")
+    print("Username from dependency:", username)
+    return {"username": username}
 @router.get("/users/") 
 def get_user(db:Session=Depends(get_db)): 
     return db.query(models.User).all() 
